@@ -1,10 +1,41 @@
 import gradio as gr
 
+class HashTable:
+    def __init__(self, size=101):
+        self.size = size
+        self.buckets = [[] for _ in range(size)]
+
+    def _hash(self, key):
+        return hash(key) % self.size
+
+    def insert(self, key, value):
+        index = self._hash(key)
+        for i, (k, _) in enumerate(self.buckets[index]):
+            if k == key:
+                self.buckets[index][i] = (key, value)
+                return
+        self.buckets[index].append((key, value))
+
+    def get(self, key):
+        index = self._hash(key)
+        for k, v in self.buckets[index]:
+            if k == key:
+                return v
+        return None
+
+    def keys(self):
+        result = []
+        for bucket in self.buckets:
+            result.extend(k for k, _ in bucket)
+        return result
+
+
 class nodoLista():
     def __init__(self):
         self.info = None
         self.siguiente = None
         self.sublista = Lista()
+
 
 class Lista():
     def __init__(self):
@@ -41,39 +72,50 @@ class Lista():
             aux = aux.siguiente
         return elementos
 
+
 def criterio(dato, campo=None):
     if campo is None or not isinstance(dato, dict):
         return dato
     else:
         return dato.get(campo, None)
 
-estaciones = Lista()
+
+hash_estaciones = HashTable()
+
 
 def agregar_estacion(nombre):
-    if estaciones.buscar(nombre) is None:
-        estaciones.insertar(nombre)
+    if hash_estaciones.get(nombre) is None:
+        lista = Lista()
+        lista.insertar(nombre)  # nodo de nombre como cabecera
+        hash_estaciones.insert(nombre, lista)
         return f"Estación '{nombre}' agregada."
     return f"La estación '{nombre}' ya existe."
 
 def agregar_clima(estacion, clima):
-    nodo_estacion = estaciones.buscar(estacion)
-    if nodo_estacion:
-        nodo_estacion.sublista.insertar(clima)
-        return f"Clima '{clima}' agregado a la estación '{estacion}'."
+    lista = hash_estaciones.get(estacion)
+    if lista:
+        nodo_estacion = lista.buscar(estacion)
+        if nodo_estacion:
+            nodo_estacion.sublista.insertar(clima)
+            return f"Clima '{clima}' agregado a la estación '{estacion}'."
     return f"La estación '{estacion}' no fue encontrada."
 
 def mostrar_estaciones():
-    return "\n".join(estaciones.barrido()) or "No hay estaciones cargadas."
+    estaciones = hash_estaciones.keys()
+    return "\n".join(estaciones) if estaciones else "No hay estaciones cargadas."
 
 def mostrar_climas(estacion):
-    nodo_estacion = estaciones.buscar(estacion)
-    if nodo_estacion:
-        return "\n".join(nodo_estacion.sublista.barrido()) or "No hay climas para esta estación."
+    lista = hash_estaciones.get(estacion)
+    if lista:
+        nodo_estacion = lista.buscar(estacion)
+        if nodo_estacion:
+            climas = nodo_estacion.sublista.barrido()
+            return "\n".join(climas) if climas else "No hay climas para esta estación."
     return f"La estación '{estacion}' no fue encontrada."
 
 
 with gr.Blocks() as demo:
-    gr.Markdown("## Sistema de Estaciones Meteorológicas 🌦️")
+    gr.Markdown("## Sistema de Estaciones Meteorológicas")
 
     with gr.Tab("Agregar estación"):
         estacion_input = gr.Textbox(label="Nombre de la estación")
@@ -99,4 +141,4 @@ with gr.Blocks() as demo:
         salida_climas = gr.Textbox(label="Climas")
         btn_ver_climas.click(mostrar_climas, inputs=buscar_estacion, outputs=salida_climas)
 
-demo.launch(share=True)
+demo.launch()
