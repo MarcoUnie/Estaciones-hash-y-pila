@@ -13,6 +13,13 @@ def criterio(dato, campo=None):
         else:
             return dic[campo]
     
+class nodoLista():
+    def __init__(self):
+        self.info = None
+        self.siguiente = None
+        self.sublista = Lista()  # Sublista inicializada por defecto
+
+
 class Lista():
     def __init__(self):
         self.inicio = None
@@ -30,12 +37,12 @@ class Lista():
             while(act is not None and criterio(act.info, campo) < criterio(dato, campo)):
                 ant = ant.siguiente
                 act = act.siguiente
-                nodo.siguiente = act
-                ant.siguiente = nodo
-                lista.tamanio += 1
+            nodo.siguiente = act
+            ant.siguiente = nodo
+        lista.tamaño += 1
 
     def lista_vacia(lista):
-        return lista.inicio == None
+        return lista.inicio is None
 
     def buscar(lista, buscado, campo=None):
         aux = lista.inicio
@@ -45,20 +52,22 @@ class Lista():
 
     def eliminar(lista, clave, campo=None):
         dato = None
+        if lista.inicio is None:
+            return dato
         if(criterio(lista.inicio.info, campo) == criterio(clave, campo)):
             dato = lista.inicio.info
             lista.inicio = lista.inicio.siguiente
-            lista.tamanio -= 1
+            lista.tamaño -= 1
         else:
             anterior = lista.inicio
             actual = lista.inicio.siguiente
             while(actual is not None and criterio(actual.info, campo) != criterio(clave, campo)):
                 anterior = anterior.siguiente
                 actual = actual.siguiente
-            if (actual is not None):
+            if actual is not None:
                 dato = actual.info
-                anterior.sig = actual.sig
-                lista.tamanio -= 1
+                anterior.siguiente = actual.siguiente
+                lista.tamaño -= 1
         return dato
 
     def tamanio(lista):
