@@ -37,11 +37,30 @@ class Lista():
     def lista_vacia(lista):
         return lista.inicio == None
 
-    def buscar(lista, buscado):
+    def buscar(lista, buscado, campo=None):
         aux = lista.inicio
-        while(aux is not None and aux.info != buscado):
+        while(aux is not None and criterio(aux.info, campo) != criterio(buscado, campo)):
             aux = aux.siguiente
         return aux
+
+    def eliminar(lista, clave, campo=None):
+        """Elimina un elemento de la lista y lo devuelve si lo encuentra."""
+        dato = None
+        if(criterio(lista.inicio.info, campo) == criterio(clave, campo)):
+            dato = lista.inicio.info
+            lista.inicio = lista.inicio.siguiente
+            lista.tamanio -= 1
+        else:
+            anterior = lista.inicio
+            actual = lista.inicio.siguiente
+            while(actual is not None and criterio(actual.info, campo) != criterio(clave, campo)):
+                anterior = anterior.siguiente
+                actual = actual.siguiente
+        if (actual is not None):
+            dato = actual.info
+            anterior.sig = actual.sig
+            lista.tamanio -= 1
+            return dato
 
     def tamanio(lista):
         return lista.tamaño
